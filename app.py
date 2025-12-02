@@ -47,7 +47,7 @@ with st.sidebar:
     
     st.markdown("---")
     st.markdown("### 📱 手机扫码使用")
-    app_url = "https://share.streamlit.io" # 建议替换为你部署后的真实网址
+    app_url = "https://zcrrkfc8pqdshl4j64ijb4.streamlit.app/" # 建议替换为你部署后的真实网址
     
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(app_url)
