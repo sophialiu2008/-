@@ -1,0 +1,5 @@
+streamlit
+dashscope
+Pillow
+edge-tts
+nest_asyncio
