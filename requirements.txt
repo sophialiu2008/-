@@ -3,3 +3,4 @@ dashscope
 Pillow
 edge-tts
 nest_asyncio
+qrcode
