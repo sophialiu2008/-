@@ -11,11 +11,11 @@ from gtts import gTTS
 import docx
 import PyPDF2
 
-# --- 1. 页面配置与美化 (UI升级) ---
+# --- 1. 页面配置与美化 ---
 st.set_page_config(
     page_title="小学作文批改精灵", 
     page_icon="🎓",
-    layout="mobile", # 布局优化
+    layout="centered", # 👈 修正点：这里必须是 centered，手机端体验才好
     initial_sidebar_state="expanded"
 )
 
@@ -62,19 +62,22 @@ if 'review_result' not in st.session_state:
 def get_font():
     font_path = "SimHei.ttf"
     if not os.path.exists(font_path):
-        # 从 GitHub 镜像下载一个免费商用字体 (文泉驿微米黑)
+        # 使用更稳定的字体源
         url = "https://github.com/StellarCN/scp_zh/raw/master/fonts/SimHei.ttf"
         try:
-            with st.spinner("首次运行，正在下载字体文件..."):
-                r = requests.get(url)
-                with open(font_path, "wb") as f:
-                    f.write(r.content)
+            with st.spinner("首次运行，正在下载中文字体文件..."):
+                r = requests.get(url, timeout=30)
+                if r.status_code == 200:
+                    with open(font_path, "wb") as f:
+                        f.write(r.content)
+                else:
+                    return None
         except:
-            return None # 下载失败则使用默认
+            return None 
     return font_path
 
 # --- 🛠️ 工具2：生成评语图片 ---
-def create_review_card(text, student_name="同学"):
+def create_review_card(text):
     font_path = get_font()
     # 创建白色背景图
     width, height = 800, 1000
@@ -92,18 +95,26 @@ def create_review_card(text, student_name="同学"):
     draw.text((40, 40), "🏆 作文批改报告", fill=(255, 75, 75), font=title_font)
     draw.line((40, 100, 760, 100), fill=(200, 200, 200), width=2)
     
-    # 简单的文字换行处理
+    # 文字换行处理
     margin = 40
     y_text = 120
     lines = text.split('\n')
     
     for line in lines:
-        # 简单处理：如果行太长就切断（更完美的换行需要复杂计算，这里简化处理）
+        # 去掉 Markdown 符号
+        line = line.replace('#', '').replace('*', '')
+        # 简单换行
         if len(line) > 35: 
-            line = line[:35] + "..." 
-        draw.text((margin, y_text), line, fill=(50, 50, 50), font=content_font)
-        y_text += 35
-        if y_text > height - 100: break # 防止超出图片
+            # 把长句子切成多行
+            for i in range(0, len(line), 35):
+                chunk = line[i:i+35]
+                draw.text((margin, y_text), chunk, fill=(50, 50, 50), font=content_font)
+                y_text += 35
+        else:
+            draw.text((margin, y_text), line, fill=(50, 50, 50), font=content_font)
+            y_text += 35
+            
+        if y_text > height - 100: break 
         
     draw.text((margin, height-60), "🤖 AI 批改助手生成", fill=(150, 150, 150), font=content_font)
     return img
@@ -153,13 +164,16 @@ with st.sidebar:
     )
     
     st.markdown("---")
-    # 二维码展示
-    app_url = "https://share.streamlit.io" # 请替换为你的真实网址
+    # 替换为你的真实网址
+    app_url = "https://share.streamlit.io" 
     qr = qrcode.QRCode(box_size=5, border=2)
     qr.add_data(app_url)
     qr.make(fit=True)
     img_qr = qr.make_image(fill='black', back_color='white')
-    st.image(img_qr.get_image(), caption="手机扫码使用")
+    # 转换二维码格式
+    img_byte_arr = io.BytesIO()
+    img_qr.save(img_byte_arr, format='PNG')
+    st.image(img_byte_arr.getvalue(), caption="手机扫码使用")
 
 # --- 4. 主逻辑处理 ---
 if uploaded_files:
@@ -176,8 +190,9 @@ if uploaded_files:
         st.image(image, caption='预览图', use_container_width=True)
         
         # 存临时文件供 API 使用
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp_file:
-            image.save(tmp_file, format='JPEG')
+        file_suffix = os.path.splitext(uploaded_files[0].name)[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_suffix) as tmp_file:
+            image.save(tmp_file) # 保持原格式
             tmp_file_path = tmp_file.name
 
         if st.button("🔍 开始识别文字", type="primary"):
@@ -218,7 +233,7 @@ if uploaded_files:
         with col1:
             if st.button("✨ 智能批改", type="primary"):
                 with st.spinner('🤖 老师正在思考...'):
-                    # 🌟 动态 Prompt：根据年级调整语气
+                    # 🌟 动态 Prompt
                     style_prompt = ""
                     if grade == "一/二年级":
                         style_prompt = "语气要像幼儿园老师一样亲切，多用‘真棒’、‘加油’，重点关注错别字和标点，不要讲太深的道理。"
@@ -263,7 +278,7 @@ if uploaded_files:
                 if st.button("🔊 播放语音"):
                     text_clean = st.session_state.review_result.replace("*", "").replace("#", "")
                     try:
-                        tts = gTTS(text=text_clean[:500], lang='zh-cn') # 限制长度防止超时
+                        tts = gTTS(text=text_clean[:500], lang='zh-cn')
                         tts.save("review.mp3")
                         st.audio("review.mp3")
                     except Exception as e:
@@ -272,7 +287,6 @@ if uploaded_files:
             with c2:
                 # 生成图片卡片
                 img = create_review_card(st.session_state.review_result)
-                # 转换为字节流供下载
                 buf = io.BytesIO()
                 img.save(buf, format="PNG")
                 byte_im = buf.getvalue()
