@@ -14,7 +14,7 @@ import math
 
 # --- 1. 页面配置 ---
 st.set_page_config(
-    page_title="小学作文批改精灵", 
+    page_title="小学语文作文批改宝",  # 👈 已修改
     page_icon="🎓",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -41,7 +41,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎓 小学作文批改精灵")
+st.title("🎓 小学语文作文批改宝") # 👈 已修改
 st.caption("🚀 支持 图片 / Word / PDF | 智能分年级点评 | 真人语音朗读")
 
 # --- 2. 基础配置 ---
@@ -93,11 +93,10 @@ def get_font():
         except: return None 
     return font_path
 
-# --- 🛠️ 工具3：生成长图卡片 (核心修复) ---
+# --- 🛠️ 工具3：生成长图卡片 ---
 def create_review_card(text):
     font_path = get_font()
     
-    # 1. 准备字体
     try:
         title_font = ImageFont.truetype(font_path, 40) if font_path else ImageFont.load_default()
         content_font = ImageFont.truetype(font_path, 24) if font_path else ImageFont.load_default()
@@ -105,48 +104,39 @@ def create_review_card(text):
         title_font = ImageFont.load_default()
         content_font = ImageFont.load_default()
 
-    # 2. 预处理文本：先算算需要多少行
-    chars_per_line = 32  # 每行大约显示的字数
-    line_height = 35     # 每行高度
+    # 预处理文本：动态计算高度
+    chars_per_line = 32
+    line_height = 35
     margin = 40
     header_height = 120
     footer_height = 80
     
-    # 将长文本切分成由于换行产生的“视觉行”
     display_lines = []
     paragraphs = text.split('\n')
     for para in paragraphs:
-        # 清洗符号
         clean_line = para.replace('#', '').replace('*', '')
         if not clean_line.strip():
-            display_lines.append("") # 保留空行
+            display_lines.append("")
             continue
-            
-        # 自动换行算法
         for i in range(0, len(clean_line), chars_per_line):
             display_lines.append(clean_line[i:i+chars_per_line])
     
-    # 3. 动态计算图片高度
     total_content_height = len(display_lines) * line_height
     img_height = header_height + total_content_height + footer_height
-    img_width = 800 # 固定宽度
+    img_width = 800
 
-    # 4. 开始画图
     img = Image.new('RGB', (img_width, img_height), color=(255, 255, 245))
     draw = ImageDraw.Draw(img)
 
-    # 绘制头部
     draw.text((40, 40), "🏆 作文批改报告", fill=(255, 75, 75), font=title_font)
     draw.line((40, 100, 760, 100), fill=(200, 200, 200), width=2)
     
-    # 绘制正文
     y_text = header_height
     for line in display_lines:
         draw.text((margin, y_text), line, fill=(50, 50, 50), font=content_font)
         y_text += line_height
         
-    # 绘制底部
-    draw.text((margin, img_height - 50), "🤖 AI 批改助手生成", fill=(150, 150, 150), font=content_font)
+    draw.text((margin, img_height - 50), "🤖 小学语文作文批改宝", fill=(150, 150, 150), font=content_font) # 底部水印也改了
     
     return img
 
@@ -248,7 +238,6 @@ if uploaded_files:
                         if generate_audio_dashscope(st.session_state.review_result, voice_choice):
                             st.audio("review.mp3")
             with c2:
-                # 🌟 核心修复：这里的函数已经更新，支持长图
                 img = create_review_card(st.session_state.review_result)
                 buf = io.BytesIO()
                 img.save(buf, format="PNG")
