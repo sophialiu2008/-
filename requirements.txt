@@ -1,6 +1,8 @@
 streamlit
 dashscope
 Pillow
-edge-tts
-nest_asyncio
 qrcode
+gTTS
+python-docx
+PyPDF2
+requests
