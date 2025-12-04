@@ -14,8 +14,8 @@ import math
 
 # --- 1. 页面配置 ---
 st.set_page_config(
-    page_title="小学语文作文批改宝",
-    page_icon="⚡", # 图标换个闪电，代表快
+    page_title="小学语文作文批改宝", # ✅ 标题已改回
+    page_icon="🎓",
     layout="centered",
     initial_sidebar_state="expanded"
 )
@@ -34,14 +34,23 @@ st.markdown("""
         background-color: #f0fdf4;
         border-radius: 10px;
     }
-    /* 加一个加载动画的优化 */
     .stSpinner > div {
         border-top-color: #FF4B4B !important;
+    }
+    /* 针对手机端上传区域的优化提示 */
+    .upload-hint {
+        font-size: 0.85rem;
+        color: #e65100;
+        background-color: #fff3e0;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 5px;
+        border: 1px solid #ffcc80;
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("⚡ 小学语文作文批改宝 (极速版)")
+st.title("🎓 小学语文作文批改宝") # ✅ 标题已改回
 st.caption("🚀 图片自动压缩 | 极速响应 | 智能分年级点评")
 
 # --- 2. 基础配置 ---
@@ -58,14 +67,9 @@ if 'review_result' not in st.session_state:
 
 # --- 🛠️ 核心优化工具：图片压缩 ---
 def compress_image(image, max_width=1024):
-    """
-    将图片宽度压缩到 max_width，保持比例。
-    这能极大减少 API 传输时间和 OCR 处理时间。
-    """
     if image.width > max_width:
         ratio = max_width / image.width
         new_height = int(image.height * ratio)
-        # 使用 LANCZOS 算法保持文字清晰度
         return image.resize((max_width, new_height), Image.Resampling.LANCZOS)
     return image
 
@@ -80,7 +84,7 @@ def generate_audio_dashscope(text, voice_name):
     model_id = voice_map.get(voice_name, "sambert-zhichu-v1")
     try:
         text = text.replace("**", "").replace("###", "").replace("---", "")
-        if len(text) > 800: text = text[:800] # 进一步减少语音字数以提升速度
+        if len(text) > 800: text = text[:800]
         result = SpeechSynthesizer.call(model=model_id, text=text, sample_rate=48000)
         if result.get_audio_data() is not None:
             with open("review.mp3", "wb") as f:
@@ -98,8 +102,8 @@ def get_font():
     if not os.path.exists(font_path):
         url = "https://github.com/StellarCN/scp_zh/raw/master/fonts/SimHei.ttf"
         try:
-            with st.spinner("首次运行，正在下载资源..."):
-                r = requests.get(url, timeout=10) # 减少超时时间
+            with st.spinner("首次运行，正在加载资源..."):
+                r = requests.get(url, timeout=10)
                 if r.status_code == 200:
                     with open(font_path, "wb") as f:
                         f.write(r.content)
@@ -147,7 +151,8 @@ def create_review_card(text):
         draw.text((margin, y_text), line, fill=(50, 50, 50), font=content_font)
         y_text += line_height
         
-    draw.text((margin, img_height - 50), "⚡ 小学语文作文批改宝", fill=(150, 150, 150), font=content_font)
+    # ✅ 底部水印改回原名
+    draw.text((margin, img_height - 50), "🤖 小学语文作文批改宝", fill=(150, 150, 150), font=content_font)
     
     return img
 
@@ -167,8 +172,6 @@ def stitch_images(image_list):
     new_im = Image.new('RGB', (max(widths), sum(heights)), (255, 255, 255))
     y_offset = 0
     for im in images: new_im.paste(im, (0, y_offset)); y_offset += im.size[1]
-    
-    # 🌟 拼接后立即压缩，防止长图过大
     return compress_image(new_im)
 
 # --- 3. 侧边栏 ---
@@ -181,7 +184,21 @@ with st.sidebar:
     )
     st.markdown("---")
     st.header("📤 上传")
-    uploaded_files = st.file_uploader("支持 图片 / Word / PDF", type=['png', 'jpg', 'jpeg', 'docx', 'pdf'], accept_multiple_files=True)
+    
+    # ✅ 重点修复：上传区域增加文字说明
+    uploaded_files = st.file_uploader(
+        "支持 图片 / Word / PDF", 
+        type=['png', 'jpg', 'jpeg', 'docx', 'pdf'], 
+        accept_multiple_files=True
+    )
+    # 🌟 专门为手机用户增加的提示
+    st.markdown("""
+    <div class="upload-hint">
+        📱 <b>手机端提示：</b><br>
+        如果要上传 <b>Word</b> 或 <b>PDF</b>，点击上传后请选择 <b>“浏览”</b> 或 <b>“文件”</b> (Files)，不要只点击“照片图库”。
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("---")
     app_url = "https://share.streamlit.io"
     qr = qrcode.QRCode(box_size=5, border=2)
@@ -196,13 +213,12 @@ if uploaded_files:
     if file_type in ['png', 'jpg', 'jpeg']:
         if len(uploaded_files) > 1:
             st.info(f"📸 拼接 {len(uploaded_files)} 张图片...")
-            image = stitch_images(uploaded_files) # 这里面已经包含压缩了
+            image = stitch_images(uploaded_files) 
         else:
             image = Image.open(uploaded_files[0])
-            # 🌟 单张图片也要压缩
             image = compress_image(image)
             
-        st.image(image, caption='预览(已自动压缩以加速)', use_container_width=True)
+        st.image(image, caption='预览(已自动压缩)', use_container_width=True)
         
         file_suffix = os.path.splitext(uploaded_files[0].name)[1]
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_suffix) as tmp_file:
@@ -210,9 +226,8 @@ if uploaded_files:
             tmp_file_path = tmp_file.name
 
         if st.button("🔍 识别文字", type="primary"):
-            with st.spinner('👀 极速识别中...'):
+            with st.spinner('👀 识别中...'):
                 try:
-                    # 识别依然用 max，保证手写识别率，因为图片变小了，速度会变快
                     msg = [{'role': 'user', 'content': [{'image': f"file://{tmp_file_path}"}, {'text': 'OCR识别。'}]}]
                     resp = MultiModalConversation.call(model='qwen-vl-max', messages=msg)
                     if resp.status_code == 200:
@@ -233,12 +248,11 @@ if uploaded_files:
         user_text = st.text_area("内容", value=st.session_state.extracted_text, height=150)
         
         if st.button("✨ 智能批改", type="primary"):
-            with st.spinner('⚡ 正在光速思考...'):
+            with st.spinner('⚡ 老师正在批改...'):
                 s_prompt = "亲切鼓励" if grade == "一/二年级" else "客观专业"
                 prompt = f"你是语文老师。批改{grade}作文。语气：{s_prompt}。作文：{user_text}。按Markdown输出：亮点、诊断、建议、评级。"
                 try:
-                    # 🌟 核心提速点：改用 qwen-turbo
-                    # Turbo 速度是 Plus 的两倍以上，且对于小学作文逻辑完全够用
+                    # ✅ 保持使用 Turbo 模型以确保速度
                     resp = Generation.call(model='qwen-turbo', messages=[{'role': 'user', 'content': prompt}])
                     if resp.status_code == 200:
                         st.session_state.review_result = resp.output.text
