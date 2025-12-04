@@ -29,23 +29,42 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* 标题样式 */
-    h1 {
-        color: #E67E22;
+    /* 🌟 品牌横幅 (Brand Banner) 样式 */
+    .brand-banner {
+        background: linear-gradient(135deg, #FF9F43 0%, #FF6B6B 100%); /* 橙红活力渐变 */
+        padding: 25px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(255, 107, 107, 0.2);
+        margin-bottom: 30px;
+        color: white;
+    }
+    
+    .brand-title {
         font-family: "Microsoft YaHei", sans-serif;
         font-weight: 800;
-        text-align: center;
-        margin-bottom: 0px;
+        font-size: 2.2rem;
+        margin: 0;
+        letter-spacing: 2px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .brand-slogan {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-top: 8px;
+        font-weight: 400;
+        letter-spacing: 1px;
     }
     
     /* 设置区域卡片化 */
     .settings-card {
         background-color: #FFFFFF;
-        padding: 15px;
-        border-radius: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-        border: 1px solid #F0E0D0;
+        padding: 18px;
+        border-radius: 18px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 25px;
+        border: 1px solid #FFF0E0;
     }
     
     /* 选项卡样式 */
@@ -55,43 +74,56 @@ st.markdown("""
     }
     .stTabs [data-baseweb="tab"] {
         background-color: #fff;
-        border-radius: 10px;
-        color: #555;
+        border-radius: 12px;
+        color: #666;
         font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        border: 1px solid #f0f0f0;
         flex: 1;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
     .stTabs [aria-selected="true"] {
         background-color: #FF9F43 !important;
         color: white !important;
+        border: none;
+        box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
     }
     
     /* 按钮样式 */
     .stButton>button {
         width: 100%;
         border-radius: 30px;
-        height: 50px;
-        font-size: 16px !important;
+        height: 55px;
+        font-size: 18px !important;
         font-weight: bold;
         border: none;
         background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
         color: white;
-        box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+        box-shadow: 0 6px 15px rgba(255, 152, 0, 0.25);
     }
     .stButton>button:hover {
         color: white !important;
         transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(255, 152, 0, 0.35);
     }
 
     /* 结果卡片 */
     div.css-card {
         background-color: white;
-        padding: 20px;
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        border-top: 5px solid #FF9F43;
+        margin-top: 20px;
+    }
+    
+    /* 上传框微调 */
+    div[data-testid="stFileUploader"] {
+        background-color: #fff;
+        border: 2px dashed #FFCC80;
         border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        border-top: 4px solid #FF9F43;
-        margin-top: 15px;
+        padding: 15px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -232,10 +264,15 @@ def stitch_images(image_list):
 
 # --- 3. 核心界面布局 ---
 
-st.markdown("<h1>🎓 小学语文作文批改宝</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #aaa; margin-bottom: 15px; font-size: 0.9rem;'>📸 拍照即改 | 📝 深度点评 | 🎙️ 语音朗读</p>", unsafe_allow_html=True)
+# 🌟 核心改动：使用 HTML 自定义一个醒目的 Banner
+st.markdown("""
+<div class="brand-banner">
+    <h1 class="brand-title">🎓 小学语文作文批改宝</h1>
+    <p class="brand-slogan">📸 拍照即改 | 📝 深度点评 | 🎙️ 语音朗读</p>
+</div>
+""", unsafe_allow_html=True)
 
-# 🌟 设置区域 (从侧边栏移到主界面)
+# 设置区域
 with st.container():
     st.markdown('<div class="settings-card">', unsafe_allow_html=True)
     c_set1, c_set2 = st.columns(2)
@@ -245,7 +282,7 @@ with st.container():
         voice_choice = st.selectbox("🔊 朗读声音", ["👩‍🏫 温柔女老师", "👨‍🏫 阳光男老师"])
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 🌟 上传区域 (选项卡)
+# 上传区域
 tab_cam, tab_doc = st.tabs(["📸 拍照片 (推荐)", "📄 传文档"])
 
 uploaded_imgs = None
@@ -381,4 +418,4 @@ if final_file or is_multiple_imgs:
                     img = create_review_card(st.session_state.review_result)
                     buf = io.BytesIO()
                     img.save(buf, format="PNG")
-                    st.download_button("🖼️ 图片", buf.getvalue(), "评语.png", "image/png")
+                    st.download_button("🖼
