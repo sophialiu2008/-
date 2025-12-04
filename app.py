@@ -22,46 +22,40 @@ st.set_page_config(
 # --- 🎨 样式优化 ---
 st.markdown("""
     <style>
-    /* 全局背景 */
+    /* 全局背景：柔和米色 */
     .stApp { background-color: #FFFBF0; }
     
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* 🌟 品牌横幅 */
+    /* 🌟 品牌横幅 (Brand Banner) */
     .brand-banner {
         background: linear-gradient(135deg, #FF9F43 0%, #FF6B6B 100%);
-        padding: 25px;
+        padding: 30px 20px;
         border-radius: 20px;
         text-align: center;
         box-shadow: 0 10px 20px rgba(255, 107, 107, 0.2);
-        margin-bottom: 25px;
+        margin-bottom: 30px;
         color: white;
     }
+    
+    /* 标题样式：支持换行优化 */
     .brand-title {
         font-family: "Microsoft YaHei", sans-serif;
         font-weight: 800;
-        font-size: 2.2rem;
+        font-size: 2.4rem; /* 稍微加大 */
         margin: 0;
+        line-height: 1.3; /* 行间距 */
         letter-spacing: 2px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
+    
     .brand-slogan {
         font-size: 1rem;
         opacity: 0.95;
-        margin-top: 8px;
+        margin-top: 15px;
         font-weight: 500;
         letter-spacing: 1px;
-    }
-    
-    /* 设置控制台 */
-    .settings-card {
-        background-color: #FFFFFF;
-        padding: 20px;
-        border-radius: 18px;
-        border: 2px solid #FFCC80; 
-        box-shadow: 0 8px 16px rgba(255, 159, 67, 0.15);
-        margin-bottom: 25px;
     }
     
     /* 选项卡样式 */
@@ -259,25 +253,26 @@ def stitch_images(image_list):
 
 # --- 3. 核心界面布局 ---
 
-# 品牌横幅
+# 🌟 优化后的品牌横幅：标题分为两行，更加大气
 st.markdown("""
 <div class="brand-banner">
-    <h1 class="brand-title">🎓 小学语文作文批改宝</h1>
+    <h1 class="brand-title">小学语文作文<br>批改宝</h1>
     <p class="brand-slogan">📸 拍照即改 | 📝 深度点评 | 🎙️ 语音朗读</p>
 </div>
 """, unsafe_allow_html=True)
 
-# 醒目的设置区域
-with st.container():
-    st.markdown('<div class="settings-card">', unsafe_allow_html=True)
-    st.markdown('<p style="color: #E67E22; font-weight: bold; margin-bottom: 10px; font-size: 1.1rem;">🛠️ 批改偏好设置</p>', unsafe_allow_html=True)
-    
-    c_set1, c_set2 = st.columns(2)
-    with c_set1:
-        grade = st.select_slider("🎓 选择年级", options=["一/二年级", "三/四年级", "五/六年级"], value="三/四年级")
-    with c_set2:
-        voice_choice = st.selectbox("🔊 朗读声音", ["👩‍🏫 温柔女老师", "👨‍🏫 阳光男老师"])
-    st.markdown('</div>', unsafe_allow_html=True)
+# 🌟 设置区域 (移除了外层的 div 卡片，彻底解决了“白条”问题)
+st.markdown('<p style="color: #E67E22; font-weight: bold; margin-bottom: 5px; font-size: 1.1rem; text-align: left;">🛠️ 批改偏好设置</p>', unsafe_allow_html=True)
+
+# 直接使用 Streamlit 列布局，不加 HTML wrapper
+c_set1, c_set2 = st.columns(2)
+with c_set1:
+    grade = st.select_slider("🎓 选择年级", options=["一/二年级", "三/四年级", "五/六年级"], value="三/四年级")
+with c_set2:
+    voice_choice = st.selectbox("🔊 朗读声音", ["👩‍🏫 温柔女老师", "👨‍🏫 阳光男老师"])
+
+# 增加一点间距
+st.markdown("---")
 
 # 上传区域
 tab_cam, tab_doc = st.tabs(["📸 拍照片 (推荐)", "📄 传文档"])
