@@ -5,7 +5,6 @@ import dashscope
 from PIL import Image, ImageDraw, ImageFont
 import tempfile
 import os
-import qrcode
 import io
 import requests
 import docx
@@ -20,10 +19,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 🎨 样式优化 (保留安全的美化) ---
+# --- 🎨 样式优化 ---
 st.markdown("""
     <style>
-    /* 全局背景：柔和的米色 */
+    /* 全局背景：柔和米色 */
     .stApp { background-color: #FFFBF0; }
     
     /* 隐藏菜单 */
@@ -33,12 +32,23 @@ st.markdown("""
     /* 标题样式 */
     h1 {
         color: #E67E22;
+        font-family: "Microsoft YaHei", sans-serif;
         font-weight: 800;
         text-align: center;
-        font-family: "Microsoft YaHei", sans-serif;
+        margin-bottom: 0px;
     }
     
-    /* 选项卡样式优化 */
+    /* 设置区域卡片化 */
+    .settings-card {
+        background-color: #FFFFFF;
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #F0E0D0;
+    }
+    
+    /* 选项卡样式 */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background-color: transparent;
@@ -57,12 +67,12 @@ st.markdown("""
         color: white !important;
     }
     
-    /* 按钮样式：大橙色按钮 */
+    /* 按钮样式 */
     .stButton>button {
         width: 100%;
         border-radius: 30px;
         height: 50px;
-        font-size: 18px !important;
+        font-size: 16px !important;
         font-weight: bold;
         border: none;
         background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
@@ -108,8 +118,8 @@ def compress_image(image, max_width=1024):
 
 def generate_audio_dashscope(text, voice_name):
     voice_map = {
-        "👩‍🏫 温柔女老师 (知厨)": "sambert-zhichu-v1",
-        "👨‍🏫 阳光男老师 (知达)": "sambert-zhida-v1"
+        "👩‍🏫 温柔女老师": "sambert-zhichu-v1",
+        "👨‍🏫 阳光男老师": "sambert-zhida-v1"
     }
     model_id = voice_map.get(voice_name, "sambert-zhichu-v1")
     try:
@@ -220,24 +230,22 @@ def stitch_images(image_list):
     for im in images: new_im.paste(im, (0, y_offset)); y_offset += im.size[1]
     return compress_image(new_im)
 
-# --- 3. 侧边栏 ---
-with st.sidebar:
-    st.header("⚙️ 设置")
-    grade = st.select_slider("选择年级", options=["一/二年级", "三/四年级", "五/六年级"], value="三/四年级")
-    voice_choice = st.selectbox("🔊 朗读声音", ["👩‍🏫 温柔女老师 (知厨)", "👨‍🏫 阳光男老师 (知达)"])
-    st.markdown("---")
-    app_url = "https://share.streamlit.io"
-    qr = qrcode.QRCode(box_size=5, border=2)
-    qr.add_data(app_url)
-    qr.make(fit=True)
-    st.image(qr.make_image(fill='black', back_color='white').get_image(), caption="手机扫码使用")
-
-# --- 4. 主界面布局 ---
+# --- 3. 核心界面布局 ---
 
 st.markdown("<h1>🎓 小学语文作文批改宝</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #888; margin-bottom: 20px;'>📸 拍照即改 | 📝 深度点评 | 🎙️ 语音朗读</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #aaa; margin-bottom: 15px; font-size: 0.9rem;'>📸 拍照即改 | 📝 深度点评 | 🎙️ 语音朗读</p>", unsafe_allow_html=True)
 
-# 🌟 使用选项卡切换上传方式
+# 🌟 设置区域 (从侧边栏移到主界面)
+with st.container():
+    st.markdown('<div class="settings-card">', unsafe_allow_html=True)
+    c_set1, c_set2 = st.columns(2)
+    with c_set1:
+        grade = st.select_slider("🎓 选择年级", options=["一/二年级", "三/四年级", "五/六年级"], value="三/四年级")
+    with c_set2:
+        voice_choice = st.selectbox("🔊 朗读声音", ["👩‍🏫 温柔女老师", "👨‍🏫 阳光男老师"])
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# 🌟 上传区域 (选项卡)
 tab_cam, tab_doc = st.tabs(["📸 拍照片 (推荐)", "📄 传文档"])
 
 uploaded_imgs = None
@@ -245,7 +253,6 @@ uploaded_docs = None
 
 with tab_cam:
     st.info("👇 适合手写作文，点击下方按钮拍照：")
-    # 🌟 修复：label_visibility="visible"，确保按钮文字显示
     uploaded_imgs = st.file_uploader(
         "点击这里上传图片 (支持多选)", 
         type=['png', 'jpg', 'jpeg'], 
@@ -262,7 +269,7 @@ with tab_doc:
         key="doc_uploader"
     )
 
-# --- 5. 逻辑处理 ---
+# --- 4. 逻辑处理 ---
 final_file = None
 file_type = ""
 is_multiple_imgs = False
@@ -375,6 +382,3 @@ if final_file or is_multiple_imgs:
                     buf = io.BytesIO()
                     img.save(buf, format="PNG")
                     st.download_button("🖼️ 图片", buf.getvalue(), "评语.png", "image/png")
-else:
-    # 底部空白填充
-    st.write("")
