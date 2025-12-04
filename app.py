@@ -22,24 +22,22 @@ st.set_page_config(
 # --- 🎨 样式优化 ---
 st.markdown("""
     <style>
-    /* 全局背景：柔和米色 */
+    /* 全局背景 */
     .stApp { background-color: #FFFBF0; }
     
-    /* 隐藏菜单 */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* 🌟 品牌横幅 (Brand Banner) 样式 */
+    /* 🌟 品牌横幅 */
     .brand-banner {
-        background: linear-gradient(135deg, #FF9F43 0%, #FF6B6B 100%); /* 橙红活力渐变 */
+        background: linear-gradient(135deg, #FF9F43 0%, #FF6B6B 100%);
         padding: 25px;
         border-radius: 20px;
         text-align: center;
         box-shadow: 0 10px 20px rgba(255, 107, 107, 0.2);
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         color: white;
     }
-    
     .brand-title {
         font-family: "Microsoft YaHei", sans-serif;
         font-weight: 800;
@@ -48,28 +46,27 @@ st.markdown("""
         letter-spacing: 2px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    
     .brand-slogan {
         font-size: 1rem;
-        opacity: 0.9;
+        opacity: 0.95;
         margin-top: 8px;
-        font-weight: 400;
+        font-weight: 500;
         letter-spacing: 1px;
     }
     
-    /* 设置区域卡片化 */
+    /* 设置控制台 */
     .settings-card {
         background-color: #FFFFFF;
-        padding: 18px;
+        padding: 20px;
         border-radius: 18px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        border: 2px solid #FFCC80; 
+        box-shadow: 0 8px 16px rgba(255, 159, 67, 0.15);
         margin-bottom: 25px;
-        border: 1px solid #FFF0E0;
     }
     
     /* 选项卡样式 */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
+        gap: 10px;
         background-color: transparent;
     }
     .stTabs [data-baseweb="tab"] {
@@ -77,11 +74,10 @@ st.markdown("""
         border-radius: 12px;
         color: #666;
         font-weight: bold;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         border: 1px solid #f0f0f0;
         flex: 1;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        padding: 10px;
     }
     .stTabs [aria-selected="true"] {
         background-color: #FF9F43 !important;
@@ -105,7 +101,6 @@ st.markdown("""
     .stButton>button:hover {
         color: white !important;
         transform: scale(1.02);
-        box-shadow: 0 8px 20px rgba(255, 152, 0, 0.35);
     }
 
     /* 结果卡片 */
@@ -118,12 +113,12 @@ st.markdown("""
         margin-top: 20px;
     }
     
-    /* 上传框微调 */
+    /* 上传框样式 */
     div[data-testid="stFileUploader"] {
-        background-color: #fff;
+        padding: 15px;
         border: 2px dashed #FFCC80;
         border-radius: 15px;
-        padding: 15px;
+        background-color: #fff;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -264,7 +259,7 @@ def stitch_images(image_list):
 
 # --- 3. 核心界面布局 ---
 
-# 🌟 核心改动：使用 HTML 自定义一个醒目的 Banner
+# 品牌横幅
 st.markdown("""
 <div class="brand-banner">
     <h1 class="brand-title">🎓 小学语文作文批改宝</h1>
@@ -272,9 +267,11 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 设置区域
+# 醒目的设置区域
 with st.container():
     st.markdown('<div class="settings-card">', unsafe_allow_html=True)
+    st.markdown('<p style="color: #E67E22; font-weight: bold; margin-bottom: 10px; font-size: 1.1rem;">🛠️ 批改偏好设置</p>', unsafe_allow_html=True)
+    
     c_set1, c_set2 = st.columns(2)
     with c_set1:
         grade = st.select_slider("🎓 选择年级", options=["一/二年级", "三/四年级", "五/六年级"], value="三/四年级")
@@ -413,9 +410,19 @@ if final_file or is_multiple_imgs:
                 col_w, col_i = st.columns(2)
                 with col_w:
                     word_file = create_word_report(st.session_state.review_result)
-                    st.download_button("📄 Word", word_file, "批改报告.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    st.download_button(
+                        label="📄 Word", 
+                        data=word_file, 
+                        file_name="report.docx", 
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
                 with col_i:
                     img = create_review_card(st.session_state.review_result)
                     buf = io.BytesIO()
                     img.save(buf, format="PNG")
-                    st.download_button("🖼
+                    st.download_button(
+                        label="🖼️ 图片", 
+                        data=buf.getvalue(), 
+                        file_name="card.png", 
+                        mime="image/png"
+                    )
