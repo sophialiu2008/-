@@ -17,18 +17,16 @@ st.set_page_config(
     page_title="小学语文作文批改宝",
     page_icon="🎓",
     layout="centered",
-    initial_sidebar_state="collapsed" # 默认收起侧边栏，让主界面更清爽
+    initial_sidebar_state="collapsed"
 )
 
-# --- 🎨 深度美化：自定义 CSS ---
+# --- 🎨 样式优化 (保留安全的美化) ---
 st.markdown("""
     <style>
-    /* 全局背景色：极淡的暖米色，护眼 */
-    .stApp {
-        background-color: #FFFBF0;
-    }
+    /* 全局背景：柔和的米色 */
+    .stApp { background-color: #FFFBF0; }
     
-    /* 隐藏默认菜单 */
+    /* 隐藏菜单 */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
@@ -38,82 +36,52 @@ st.markdown("""
         font-weight: 800;
         text-align: center;
         font-family: "Microsoft YaHei", sans-serif;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
-    /* 选项卡 (Tabs) 美化 */
+    /* 选项卡样式优化 */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
+        gap: 8px;
         background-color: transparent;
-        border-radius: 20px;
-        padding: 5px;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #FFFFFF;
-        border-radius: 15px;
-        color: #666;
+        background-color: #fff;
+        border-radius: 10px;
+        color: #555;
         font-weight: bold;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         border: 1px solid #eee;
-        flex: 1; /* 让两个标签平分宽度 */
+        flex: 1;
     }
     .stTabs [aria-selected="true"] {
         background-color: #FF9F43 !important;
         color: white !important;
-        border: none;
-        box-shadow: 0 4px 10px rgba(255, 159, 67, 0.4);
     }
     
-    /* 上传框美化 */
-    div[data-testid="stFileUploader"] {
-        background-color: white;
-        padding: 20px;
-        border-radius: 15px;
-        border: 2px dashed #FFD180; /* 虚线边框变橙色 */
-        text-align: center;
-    }
-    div[data-testid="stFileUploader"] section {
-        background-color: #fff;
-    }
-    
-    /* 按钮美化：大圆角橙色按钮 */
+    /* 按钮样式：大橙色按钮 */
     .stButton>button {
         width: 100%;
         border-radius: 30px;
-        height: 55px;
+        height: 50px;
         font-size: 18px !important;
         font-weight: bold;
         border: none;
         background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
         color: white;
-        box-shadow: 0 6px 15px rgba(255, 152, 0, 0.3);
-        margin-top: 10px;
+        box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
     }
     .stButton>button:hover {
-        transform: scale(1.02);
         color: white !important;
+        transform: scale(1.02);
     }
-    
-    /* 文本框美化 */
-    .stTextArea textarea {
-        background-color: #ffffff;
-        border: 2px solid #FFE0B2;
-        border-radius: 15px;
-        padding: 15px;
-        font-size: 16px;
-        color: #333;
-    }
-    
+
     /* 结果卡片 */
     div.css-card {
         background-color: white;
-        padding: 25px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        border-top: 5px solid #FF9F43;
-        margin-top: 20px;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border-top: 4px solid #FF9F43;
+        margin-top: 15px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -130,7 +98,7 @@ if 'extracted_text' not in st.session_state:
 if 'review_result' not in st.session_state:
     st.session_state.review_result = ""
 
-# --- 🛠️ 工具函数 (保持不变) ---
+# --- 🛠️ 工具函数 ---
 def compress_image(image, max_width=1024):
     if image.width > max_width:
         ratio = max_width / image.width
@@ -252,7 +220,7 @@ def stitch_images(image_list):
     for im in images: new_im.paste(im, (0, y_offset)); y_offset += im.size[1]
     return compress_image(new_im)
 
-# --- 3. 侧边栏 (仅保留设置) ---
+# --- 3. 侧边栏 ---
 with st.sidebar:
     st.header("⚙️ 设置")
     grade = st.select_slider("选择年级", options=["一/二年级", "三/四年级", "五/六年级"], value="三/四年级")
@@ -264,10 +232,149 @@ with st.sidebar:
     qr.make(fit=True)
     st.image(qr.make_image(fill='black', back_color='white').get_image(), caption="手机扫码使用")
 
-# --- 4. 主界面布局 (UI重构) ---
+# --- 4. 主界面布局 ---
 
-# 标题区
 st.markdown("<h1>🎓 小学语文作文批改宝</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #888; font-size: 14px;'>📸 拍照即改 | 📝 深度点评 | 🎙️ 语音朗读</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888; margin-bottom: 20px;'>📸 拍照即改 | 📝 深度点评 | 🎙️ 语音朗读</p>", unsafe_allow_html=True)
 
-# 🌟 核心改动：使用 Tabs 选项
+# 🌟 使用选项卡切换上传方式
+tab_cam, tab_doc = st.tabs(["📸 拍照片 (推荐)", "📄 传文档"])
+
+uploaded_imgs = None
+uploaded_docs = None
+
+with tab_cam:
+    st.info("👇 适合手写作文，点击下方按钮拍照：")
+    # 🌟 修复：label_visibility="visible"，确保按钮文字显示
+    uploaded_imgs = st.file_uploader(
+        "点击这里上传图片 (支持多选)", 
+        type=['png', 'jpg', 'jpeg'], 
+        accept_multiple_files=True,
+        key="img_uploader"
+    )
+
+with tab_doc:
+    st.info("👇 适合电子版，点击下方按钮选择文件：")
+    uploaded_docs = st.file_uploader(
+        "点击这里上传Word或PDF", 
+        type=['docx', 'pdf'], 
+        accept_multiple_files=True,
+        key="doc_uploader"
+    )
+
+# --- 5. 逻辑处理 ---
+final_file = None
+file_type = ""
+is_multiple_imgs = False
+img_list_to_stitch = []
+
+if uploaded_docs:
+    final_file = uploaded_docs[0]
+    file_type = final_file.name.split('.')[-1].lower()
+elif uploaded_imgs:
+    if len(uploaded_imgs) > 1:
+        is_multiple_imgs = True
+        img_list_to_stitch = uploaded_imgs
+        file_type = "jpg"
+    else:
+        final_file = uploaded_imgs[0]
+        file_type = final_file.name.split('.')[-1].lower()
+
+if final_file or is_multiple_imgs:
+    # 预览区
+    with st.container():
+        if is_multiple_imgs or file_type in ['png', 'jpg', 'jpeg']:
+            if is_multiple_imgs:
+                st.success(f"🧩 已拼接 {len(uploaded_imgs)} 张图片")
+                image = stitch_images(img_list_to_stitch) 
+                file_name_for_tmp = "stitched.jpg"
+            else:
+                image = Image.open(final_file)
+                image = compress_image(image)
+                file_name_for_tmp = final_file.name
+                
+            st.image(image, caption='预览', use_container_width=True)
+            
+            file_suffix = os.path.splitext(file_name_for_tmp)[1]
+            with tempfile.NamedTemporaryFile(delete=False, suffix=file_suffix) as tmp_file:
+                image.save(tmp_file)
+                tmp_file_path = tmp_file.name
+
+            if st.button("🔍 开始识别文字"):
+                with st.spinner('👀 AI正在辨认字迹...'):
+                    try:
+                        msg = [{'role': 'user', 'content': [{'image': f"file://{tmp_file_path}"}, {'text': 'OCR识别，仅输出作文正文。'}]}]
+                        resp = MultiModalConversation.call(model='qwen-vl-max', messages=msg)
+                        if resp.status_code == 200:
+                            st.session_state.extracted_text = resp.output.choices[0].message.content[0]['text']
+                            st.rerun()
+                    except Exception as e: st.error(f"错误: {e}")
+
+        elif file_type in ['docx', 'pdf']:
+            if st.button("📖 读取文档内容"):
+                try:
+                    if file_type == 'docx': st.session_state.extracted_text = read_docx(final_file)
+                    else: st.session_state.extracted_text = read_pdf(final_file)
+                    st.rerun()
+                except Exception as e: st.error(f"读取失败: {e}")
+
+    # 批改区
+    if st.session_state.extracted_text:
+        st.markdown("---")
+        st.subheader("✍️ 确认内容")
+        user_text = st.text_area("text_check", value=st.session_state.extracted_text, height=150, label_visibility="collapsed")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("✨ 智能批改 (Turbo加速版)"):
+            with st.spinner('⚡ 老师正在批改中...'):
+                grade_focus = ""
+                if grade == "一/二年级": grade_focus = "侧重【敢写、能写、写完整】。鼓励为主。"
+                elif grade == "三/四年级": grade_focus = "侧重【写清楚、有细节、有顺序】。"
+                else: grade_focus = "侧重【有中心、有情感、有思考】。"
+
+                prompt = f"""
+                你是秉持“以评促写”理念的语文老师。批改{grade}作文。
+                标准：1.基础规范(30%) 2.内容表达(30%) 3.思维情感(20%) 4.创意个性(20%)。
+                侧重：{grade_focus}
+                作文：{user_text}
+                要求：评语温暖具体，Markdown输出：
+                ### 🌟 亮点与光芒
+                ### 🩺 基础诊疗室
+                ### 💡 提升小锦囊
+                ### 🏆 综合评价(A+/A/B及寄语)
+                """
+                try:
+                    resp = Generation.call(model='qwen-turbo', messages=[{'role': 'user', 'content': prompt}])
+                    if resp.status_code == 200:
+                        st.session_state.review_result = resp.output.text
+                        st.balloons()
+                    else: st.error("失败")
+                except Exception as e: st.error(f"错误: {e}")
+
+        # 结果展示
+        if st.session_state.review_result:
+            st.markdown("<div class='css-card'>", unsafe_allow_html=True)
+            st.markdown("### 📝 老师点评")
+            st.markdown(st.session_state.review_result)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("🔊 播放语音"):
+                    with st.spinner(f"正在合成..."):
+                        if generate_audio_dashscope(st.session_state.review_result, voice_choice):
+                            st.audio("review.mp3")
+            with c2:
+                col_w, col_i = st.columns(2)
+                with col_w:
+                    word_file = create_word_report(st.session_state.review_result)
+                    st.download_button("📄 Word", word_file, "批改报告.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                with col_i:
+                    img = create_review_card(st.session_state.review_result)
+                    buf = io.BytesIO()
+                    img.save(buf, format="PNG")
+                    st.download_button("🖼️ 图片", buf.getvalue(), "评语.png", "image/png")
+else:
+    # 底部空白填充
+    st.write("")
